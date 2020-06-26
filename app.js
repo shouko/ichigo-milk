@@ -1,30 +1,53 @@
 const express = require('express');
-const fs = require('fs')
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const config = require('./config');
+const logger = require('./services/logger');
+
+let dbConnected = false;
+const dbConnect = () => {
+  mongoose.connect(config.mongoUri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+  });
+  mongoose.set('useCreateIndex', true);
+};
+dbConnect();
+
+mongoose.connection.on('error', () => {
+  logger.error('MongoDB connection error.');
+});
+mongoose.connection.on('disconnected', () => {
+  logger.error('MongoDB disconnected');
+  if (!dbConnected) dbConnect();
+});
+mongoose.connection.on('connected', () => {
+  dbConnected = true;
+  logger.info('MongoDB connection established');
+});
+mongoose.connection.on('reconnected', () => {
+  logger.info('MongoDB reconnected.');
+});
 
 const app = express();
 app.disable('x-powered-by');
 
-app.use((req, res, next) => {
-  if (!req.headers.origin) return res.sendStatus(400);
-  res.setHeader('access-control-allow-origin', req.headers.origin);
-  res.setHeader('access-control-allow-credentials', true);
-  return next();
-})
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 app.get('/', (req, res) => res.send('Hello World!'));
 
-app.get('/s/:sid', (req, res) => {
-  const fn = req.params.sid.replace(/\//g, '');
-  try {
-    if (!fn.endsWith('.vtt')) throw new Error('Invalid file type');
-    res.contentType('text/vtt');
-    return res.send(fs.readFileSync(`data/${fn}`));
-  } catch(e) {
-    console.log(e);
-    return res.sendStatus(400);
-  }
+app.use('/episode', require('./middleware/cors'), require('./routes/episode'));
+app.use('/subtitle', require('./middleware/cors'), require('./routes/subtitle'));
+
+const listener = app.listen(config.port, () => {
+  logger.info(`Listening on port ${listener.address().port}!`);
 });
 
-const listener = app.listen(process.env.PORT || 3000, () => {
-  console.log(`Listening on port ${listener.address().port}!`);
+process.on('SIGINT', () => {
+  mongoose.connection.close(() => {
+    logger.info('Closing MongoDB connection.');
+    process.exit(0);
+  });
 });
