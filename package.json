@@ -6,6 +6,9 @@
   "engines": {
     "node": "12.x"
   },
+  "scripts": {
+    "start": "node app.js"
+  },
   "dependencies": {
     "body-parser": "^1.19.0",
     "bunyan": "^1.8.13",
