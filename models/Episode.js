@@ -9,4 +9,4 @@ const schema = new Schema({
   timestamps: true,
 });
 
-module.exports = model('Subtitle', schema);
+module.exports = model('Episode', schema);

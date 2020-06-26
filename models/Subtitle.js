@@ -1,9 +1,12 @@
 const mongoose = require('mongoose');
 
 const schema = new mongoose.Schema({
-  srclang: String,
-  label: String,
+  meta: {
+    srclang: String,
+    label: String,
+  },
   body: String,
+  active: { type: Boolean, default: true },
 }, {
   timestamps: true,
 });
