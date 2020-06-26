@@ -13,7 +13,7 @@ router.get('/', adminOnly, (req, res) => {
 
 router.put('/:id', adminOnly, (req, res) => {
   const { subtitles } = req.body;
-  const { id } = req.params.id;
+  const { id } = req.params;
 
   new Episode({ id, subtitles }).save((err) => {
     if (err) return res.sendStatus(500);
