@@ -5,4 +5,5 @@ module.exports = {
   mongoUri: process.env.MONGODB_URI,
   port: process.env.PORT || 0,
   allowedOrigins: process.env.ALLOWED_ORIGINS.split(',') || [],
+  adminToken: process.env.ADMIN_TOKEN,
 };

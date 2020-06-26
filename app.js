@@ -38,8 +38,8 @@ app.use(bodyParser.json());
 
 app.get('/', (req, res) => res.send('Hello World!'));
 
-app.use('/episode', require('./middleware/cors'), require('./routes/episode'));
-app.use('/subtitle', require('./middleware/cors'), require('./routes/subtitle'));
+app.use('/episode', require('./routes/episode'));
+app.use('/subtitle', require('./routes/subtitle'));
 
 const listener = app.listen(config.port, () => {
   logger.info(`Listening on port ${listener.address().port}!`);
