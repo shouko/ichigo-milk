@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const { ObjectId } = require('mongoose').Types;
+const config = require('../config');
 const Episode = require('../models/Episode');
 const cors = require('../middleware/cors');
 const { adminOnly } = require('../middleware/auth');
@@ -39,11 +40,19 @@ router.patch('/:id', adminOnly, (req, res) => {
 router.get('/:id', cors, (req, res) => {
   const { id } = req.params;
   Episode.findOne({ id })
-    .populate('subtitles', '_id srclang label')
+    .populate('subtitles', '_id meta active')
     .exec((err, result) => {
       if (err) return res.sendStatus(500);
       if (!result) return res.sendStatus(404);
-      return res.json(result);
+      return res.json({
+        subtitles: result.subtitles
+          .filter((x) => x.active)
+          .map(({ _id, meta: { srclang, label } }) => ({
+            srclang,
+            label,
+            src: `${config.baseUrl}/subtitle/${_id}`,
+          })),
+      });
     });
 });
 
